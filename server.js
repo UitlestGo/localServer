@@ -17,14 +17,19 @@ app.use('/api', expressJwt({ secret: config.secret }).unless({ path: [
     '/api/users/update',
     '/api/users/requestChangePassword',
     '/api/users/validateDynamicCode',
-    '/api/users/updatePassword'
+    '/api/users/updatePassword',
+    '/api/groups/add',
+    '/api/groups/update',
+    '/api/groups/delete'
 
 ] }));
 
 // routes
 app.use('/site', require('./controllers/site.controller'));
 app.use('/user', require('./controllers/user.controller'));
+app.use('/group', require('./controllers/group.controller'));
 app.use('/api/users', require('./controllers/api/users.controller'));
+app.use('/api/groups', require('./controllers/api/groups.controller'));
 
 // make '/app' default route
 app.get('/', function (req, res) {

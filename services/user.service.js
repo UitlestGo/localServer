@@ -91,7 +91,7 @@ function create(userParam) {
             CREATEDATE: new Date(),
             UPDATEDATE: new Date()
         };
-        var user = _.omit(set, 'password');
+        var user = _.omit(set, 'PASSWORD');
 
         // add hashed password to user object
         user.hash = bcrypt.hashSync(userParam.password, 10);
@@ -131,7 +131,8 @@ function update(_id, userParam) {
             LASTNAME: userParam.lastname,
             BIRTHDAY: userParam.birthday,
             GENDER: userParam.gender,
-            ADDRESS: userParam.address
+            ADDRESS: userParam.address,
+            UPDATEDATE: new Date()
         };
 
         db.users.update(
