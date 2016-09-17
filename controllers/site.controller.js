@@ -14,11 +14,11 @@ router.post('/login', function (req, res) {
         json: true
     }, function (error, response, body) {
         if (error) {
-            return res.status(401).json({'message':'An error occurred' , 'successful' : 'false', 'info' : ''});
+            res.status(401).json({'message':'An error occurred' , 'successful' : 'false', 'info' : ''});
         }
 
         if (!body.message) {
-            return res.status(401).json({'message':'Username or password is incorrect' , 'successful' : 'false', 'info' : ''});
+            res.status(401).json({'message':'Username or password is incorrect' , 'successful' : 'false', 'info' : ''});
         }
 
         res.status(200).json(body.message);

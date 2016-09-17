@@ -11,13 +11,14 @@ service.authenticate = authenticate;
 service.create = create;
 service.delete = _delete;
 service.find = findToken;
+service.checkToken = checkTokenAuthor;
 
 module.exports = service;
 
 function authenticate(token) {
     var deferred = Q.defer();
 
-    db.token.findOne({ token: token }, function (err, tokenMsg) {
+    db.token.findOne({ TOKEN: token }, function (err, tokenMsg) {
         if (err) deferred.reject(err.name + ': ' + err.message);
 
         if (tokenMsg) {
@@ -36,7 +37,7 @@ function create(author, token) {
     var deferred = Q.defer();
     // validation
     db.token.findOne(
-        { token: token },
+        { TOKEN: token },
         function (err, token) {
             if (err) deferred.reject(err.name + ': ' + err.message);
 
@@ -49,7 +50,7 @@ function create(author, token) {
         });
 
     function createToken() {
-        var objInsert = {'author': author, 'token' : token};
+        var objInsert = {'AUTHOR': author, 'TOKEN' : token};
         db.token.insert(
             objInsert,
             function (err, doc) {
@@ -66,7 +67,7 @@ function _delete(author, token) {
     var deferred = Q.defer();
 
     db.token.remove(
-        {author: author, token: token},
+        {AUTHOR: author, TOKEN: token},
         function (err) {
             if (err) deferred.reject(err.name + ': ' + err.message);
             deferred.resolve('Token ' + token + ' match');
@@ -79,13 +80,34 @@ function findToken(token){
     var deferred = Q.defer();
     // validation
     db.token.findOne(
-        { token: token },
+        { TOKEN: token },
         function (err, token) {
             if (err) deferred.reject(err.name + ': ' + err.message);
 
             if (token) {
-                // username already exists
+                // token already exists
                 deferred.resolve('Token ' + token + ' match');
+            } else {
+                deferred.reject('Token ' + token + ' no match');
+            }
+        });
+    return deferred.promise;
+}
+
+function checkTokenAuthor(author, token){
+    var deferred = Q.defer();
+    var flag;
+
+    // validation
+    db.token.findOne(
+        { TOKEN: token , AUTHOR: author},
+        function (err, token) {
+            if (err) deferred.reject(err.name + ': ' + err.message);
+
+            if (token) {
+                // validate success
+                flag = {success: true};
+                deferred.resolve(flag);
             } else {
                 deferred.reject('Token ' + token + ' no match');
             }

@@ -11,10 +11,15 @@ app.use(bodyParser.json());
 app.use(session({ secret: config.secret, resave: false, saveUninitialized: true }));
 
 // use JWT auth to secure the api
-app.use('/api', expressJwt({ secret: config.secret }).unless({ path: ['/api/users/authenticate', '/api/users/register'] }));
+app.use('/api', expressJwt({ secret: config.secret }).unless({ path: [
+    '/api/users/authenticate',
+    '/api/users/register',
+    '/api/users/update',
+    '/api/users/requestChangePassword'] }));
 
 // routes
 app.use('/site', require('./controllers/site.controller'));
+app.use('/user', require('./controllers/user.controller'));
 app.use('/api/users', require('./controllers/api/users.controller'));
 
 // make '/app' default route

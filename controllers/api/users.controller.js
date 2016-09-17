@@ -1,16 +1,20 @@
 ﻿var config = require('config.json');
 var express = require('express');
 var router = express.Router();
+
 var userService = require('services/user.service');
 var tokenService = require('services/token.service');
+var sendmailLogic = require('logic/sendmail.logic');
+
 var jwt = require('jsonwebtoken');
 var bcrypt = require('bcryptjs');
 
 // routes
 router.post('/authenticate', authenticateUser);
 router.post('/register', registerUser);
+router.post('/requestChangePassword' , requestChangePassword);
 router.get('/current', getCurrentUser);
-router.put('/:_id', updateUser);
+router.put('/update', updateUser);
 router.delete('/:_id', deleteUser);
 
 module.exports = router;
@@ -26,6 +30,8 @@ function authenticateUser(req, res) {
                 var msg = {'message':token, 'successful': 'true', 'info': user};
 
                 res.send({ message: msg });
+            }else {
+                res.sendStatus(401);
             }
         })
         .catch(function (err) {
@@ -58,18 +64,44 @@ function getCurrentUser(req, res) {
 }
 
 function updateUser(req, res) {
-    var userId = req.user.sub;
-    if (req.params._id !== userId) {
-        // can only update own account
-        return res.status(401).send('You can only update your own account');
-    }
+    var author = req.body.id;
+    var token = req.body.token;
 
-    userService.update(userId, req.body)
-        .then(function () {
-            res.sendStatus(200);
+    // check token and userId match with database
+    tokenService.checkToken(author, token)
+        .then(function (subMsg) {
+            if(subMsg && subMsg.success == true){
+                console.log("validate user authenticate success");
+
+                userService.update(author, req.body)
+                    .then(function () {
+                        res.sendStatus(200);
+                    })
+                    .catch(function (err) {
+                        res.sendStatus(401)
+                    });
+            }else{
+                res.sendStatus(401)
+            }
+
+        }).catch(function (subErr) {
+        res.sendStatus(401)
+    });
+}
+
+function requestChangePassword(req, res){
+    var userId = req.body.id;
+    console.log("request change password, userid = " + userId);
+    userService.getById(userId)
+        .then(function (user) {
+            if (user) {
+                sendMail(user.EMAIL, user._id, req, res);
+            } else {
+                res.sendStatus(404);
+            }
         })
         .catch(function (err) {
-            res.status(400).send(err);
+            res.sendStatus(404);
         });
 }
 
@@ -95,4 +127,33 @@ function createToken(author, token){
         }).catch(function (subErr) {
 
     });
+}
+
+function sendMail(reciever, userId, req, res){
+    var code = Math.floor(1000 + Math.random() * 9000);
+    var text = "Your code to change password is : " + code;
+    console.log("User change password with code: " + code);
+
+    sendmailLogic.sendmail(reciever, text)
+        .then(function (success) {
+            if (success) {
+                updateDynamicCode(userId, code);
+                res.sendStatus(200);
+            }else {
+                res.sendStatus(500);
+            }
+        })
+        .catch(function (err) {
+            res.sendStatus(500);
+        });
+
+
+}
+
+function updateDynamicCode(userId, code){
+    userService.updateDynamicCode(userId, code)
+        .then(function (user) {
+        })
+        .catch(function (err) {
+        });
 }
