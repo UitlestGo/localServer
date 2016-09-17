@@ -15,6 +15,8 @@ service.create = create;
 service.update = update;
 service.delete = _delete;
 service.updateDynamicCode = updateDynamicCode;
+service.validateDynamicCode = validateDynamicCode;
+service.updatePassword = updatePassword;
 
 module.exports = service;
 
@@ -26,7 +28,7 @@ function authenticate(username, password) {
 
         if (user && bcrypt.compareSync(password, user.hash)) {
             // authentication successful
-            deferred.resolve(_.omit(user, 'hash'));
+            deferred.resolve(_.omit(user, 'hash' ,'STATUS', 'LOCK'));
         } else {
             // authentication failed
             deferred.resolve();
@@ -77,13 +79,17 @@ function create(userParam) {
             USERNAME:userParam.username,
             PASSWORD:userParam.password,
             PHONE:userParam.phone,
+            EMAIL: userParam.email,
             FIRSTNAME: "",
             LASTNAME: "",
             BIRTHDAY: "",
-            EMAIL: "",
             GENDER: "",
             ADDRESS: "",
-            DYNAMICCODE: ""
+            DYNAMICCODE: "",
+            STATUS: "0",
+            LOCK: "0",
+            CREATEDATE: new Date(),
+            UPDATEDATE: new Date()
         };
         var user = _.omit(set, 'password');
 
@@ -124,11 +130,8 @@ function update(_id, userParam) {
             FIRSTNAME: userParam.firstname,
             LASTNAME: userParam.lastname,
             BIRTHDAY: userParam.birthday,
-            PHONE: userParam.phone,
-            EMAIL: userParam.email,
             GENDER: userParam.gender,
             ADDRESS: userParam.address
-
         };
 
         db.users.update(
@@ -138,6 +141,80 @@ function update(_id, userParam) {
                 if (err) deferred.reject(err.name + ': ' + err.message);
 
                 deferred.resolve();
+            });
+    }
+
+    return deferred.promise;
+}
+
+function validateDynamicCode(_id, code){
+    var deferred = Q.defer();
+
+    // validation
+    db.users.findById(_id, function (err, user) {
+        if (err) deferred.reject(err.name + ': ' + err.message);
+
+        if (user && user.DYNAMICCODE == code) {
+            // return user (without hashed password)
+            updateStatus();
+        } else {
+            // user not found
+            deferred.reject("Validate code failure");
+        }
+    });
+
+    function  updateStatus() {
+        // fields to update
+        var set = {
+            STATUS: "1"
+        };
+
+db.users.update(
+    { _id: mongo.helper.toObjectID(_id) },
+    { $set: set },
+    function (err, doc) {
+        if (err) deferred.reject(err.name + ': ' + err.message);
+
+        flag = {success: true};
+        deferred.resolve(flag);
+    });
+
+}
+
+return deferred.promise;
+}
+
+function updatePassword(_id, password){
+    var deferred = Q.defer();
+
+    // validation
+    db.users.findOne({ _id: mongo.helper.toObjectID(_id) , STATUS:"1" }, function (err, user) {
+        if (err) deferred.reject(err.name + ': ' + err.message);
+
+        if (user) {
+            updateUser();
+        } else {
+            deferred.reject("Account not found");
+        }
+    });
+
+    function updateUser() {
+        // fields to update
+        // add hashed password to user object
+
+        var set = {
+            hash: bcrypt.hashSync(password, 10),
+            STATUS: "0"
+        };
+
+        db.users.update(
+            { _id: mongo.helper.toObjectID(_id) },
+            { $set: set },
+            function (err, doc) {
+                if (err) deferred.reject(err.name + ': ' + err.message);
+
+                flag = {success: true};
+                deferred.resolve(flag);
             });
     }
 

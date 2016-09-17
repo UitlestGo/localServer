@@ -58,9 +58,52 @@ router.post('/requestChangePassword', function (req, res) {
 
         if(response.statusCode == 200){
             res.status(200).json({'message':"Check your code in email", 'successful': 'true', 'info': ''});
+        }else if(response.statusCode == 500){
+            res.status(500).json({'message':"Please update your email", 'successful': 'false', 'info': ''});
+        }else{
+            res.status(401).json({'message':'Validate account failure' , 'successful' : 'false', 'info' : ''});
         }
-        if(response.statusCode == 500){
-            res.status(200).json({'message':"Please update your email", 'successful': 'false', 'info': ''});
+
+    });
+});
+
+router.post('/validateDynamicCode', function (req, res) {
+    // authenticate using api to maintain clean separation between layers
+    request.post({
+        url: config.apiUrl + '/users/validateDynamicCode',
+        form: req.body,
+        json: true
+    }, function (error, response, body) {
+        if (error) {
+            res.status(404).json({'message':'An error occurred' , 'successful' : 'false', 'info' : ''});
+        }
+
+        if(response.statusCode == 200){
+            res.status(200).json({'message':"Ok, now you can change your password", 'successful': 'true', 'info': ''});
+        }else if(response.statusCode == 404){
+            res.status(500).json({'message':"Sorry, your code not match", 'successful': 'false', 'info': ''});
+        }else{
+            res.status(401).json({'message':'Validate account failure' , 'successful' : 'false', 'info' : ''});
+        }
+
+    });
+});
+
+router.post('/updatePassword', function (req, res) {
+    // authenticate using api to maintain clean separation between layers
+    request.post({
+        url: config.apiUrl + '/users/updatePassword',
+        form: req.body,
+        json: true
+    }, function (error, response, body) {
+        if (error) {
+            res.status(404).json({'message':'An error occurred' , 'successful' : 'false', 'info' : ''});
+        }
+
+        if(response.statusCode == 200){
+            res.status(200).json({'message':"Ok, your password was changed", 'successful': 'true', 'info': ''});
+        }else if(response.statusCode == 404){
+            res.status(500).json({'message':"Sorry, we can't update your password now", 'successful': 'false', 'info': ''});
         }else{
             res.status(401).json({'message':'Validate account failure' , 'successful' : 'false', 'info' : ''});
         }

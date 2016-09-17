@@ -13,6 +13,8 @@ var bcrypt = require('bcryptjs');
 router.post('/authenticate', authenticateUser);
 router.post('/register', registerUser);
 router.post('/requestChangePassword' , requestChangePassword);
+router.post('/validateDynamicCode' , validateDynamicCode);
+router.post('/updatePassword' , updatePassword);
 router.get('/current', getCurrentUser);
 router.put('/update', updateUser);
 router.delete('/:_id', deleteUser);
@@ -92,10 +94,49 @@ function updateUser(req, res) {
 function requestChangePassword(req, res){
     var userId = req.body.id;
     console.log("request change password, userid = " + userId);
+
     userService.getById(userId)
         .then(function (user) {
             if (user) {
                 sendMail(user.EMAIL, user._id, req, res);
+            } else {
+                res.sendStatus(404);
+            }
+        })
+        .catch(function (err) {
+            res.sendStatus(404);
+        });
+}
+
+function validateDynamicCode(req, res){
+    var userId = req.body.id;
+    var code = req.body.code;
+    console.log("validate code change password, userid = " + userId + " - code: " + code);
+
+    userService.validateDynamicCode(userId , code)
+        .then(function (msg) {
+            console.log(msg);
+            if (msg && msg.success == true) {
+                res.sendStatus(200);
+            } else {
+                res.sendStatus(404);
+            }
+        })
+        .catch(function (err) {
+            res.sendStatus(404);
+        });
+}
+
+function updatePassword(req, res){
+    var userId = req.body.id;
+    var password = req.body.password;
+    console.log("change password, userid = " + userId);
+
+    userService.updatePassword(userId , password)
+        .then(function (msg) {
+            console.log(msg);
+            if (msg && msg.success == true) {
+                res.sendStatus(200);
             } else {
                 res.sendStatus(404);
             }
@@ -146,13 +187,12 @@ function sendMail(reciever, userId, req, res){
         .catch(function (err) {
             res.sendStatus(500);
         });
-
-
 }
 
 function updateDynamicCode(userId, code){
     userService.updateDynamicCode(userId, code)
         .then(function (user) {
+
         })
         .catch(function (err) {
         });

@@ -15,7 +15,11 @@ app.use('/api', expressJwt({ secret: config.secret }).unless({ path: [
     '/api/users/authenticate',
     '/api/users/register',
     '/api/users/update',
-    '/api/users/requestChangePassword'] }));
+    '/api/users/requestChangePassword',
+    '/api/users/validateDynamicCode',
+    '/api/users/updatePassword'
+
+] }));
 
 // routes
 app.use('/site', require('./controllers/site.controller'));
