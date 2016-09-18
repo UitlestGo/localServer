@@ -89,9 +89,9 @@ router.post('/validateDynamicCode', function (req, res) {
     });
 });
 
-router.post('/updatePassword', function (req, res) {
+router.put('/updatePassword', function (req, res) {
     // authenticate using api to maintain clean separation between layers
-    request.post({
+    request.put({
         url: config.apiUrl + '/users/updatePassword',
         form: req.body,
         json: true

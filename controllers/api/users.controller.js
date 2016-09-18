@@ -14,7 +14,7 @@ router.post('/authenticate', authenticateUser);
 router.post('/register', registerUser);
 router.post('/requestChangePassword' , requestChangePassword);
 router.post('/validateDynamicCode' , validateDynamicCode);
-router.post('/updatePassword' , updatePassword);
+router.put('/updatePassword' , updatePassword);
 router.get('/current', getCurrentUser);
 router.put('/update', updateUser);
 router.delete('/:_id', deleteUser);
