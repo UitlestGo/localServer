@@ -21,6 +21,7 @@ app.use('/api', expressJwt({ secret: config.secret }).unless({ path: [
     '/api/users/newPassword',
     '/api/groups/add',
     '/api/groups/update',
+    '/api/groups/get',
     '/api/groups/delete'
 
 ] }));

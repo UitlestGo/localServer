@@ -12,6 +12,7 @@ var service = {};
 service.getById = getById;
 service.create = create;
 service.update = update;
+service.get = getList;
 service.delete = _delete;
 
 module.exports = service;
@@ -122,6 +123,18 @@ function _delete(_id, author) {
                 deferred.resolve(msg);
             });
     }
+
+    return deferred.promise;
+}
+
+function getList(author) {
+    var deferred = Q.defer();
+
+    db.groups.find({AUTHOR: author}).toArray( function (err, groups) {
+        if (err) deferred.reject(err.name + ': ' + err.message);
+
+        deferred.resolve(groups);
+    });
 
     return deferred.promise;
 }
