@@ -89,10 +89,10 @@ router.post('/validateDynamicCode', function (req, res) {
     });
 });
 
-router.put('/updatePassword', function (req, res) {
+router.put('/newPassword', function (req, res) {
     // authenticate using api to maintain clean separation between layers
     request.put({
-        url: config.apiUrl + '/users/updatePassword',
+        url: config.apiUrl + '/users/newPassword',
         form: req.body,
         json: true
     }, function (error, response, body) {
@@ -109,6 +109,42 @@ router.put('/updatePassword', function (req, res) {
         }
 
     });
+});
+
+router.put('/updatePassword', function (req, res) {
+    // authenticate using api to maintain clean separation between layers
+    var newpassword = req.body.newpassword;
+    var repassword = req.body.repassword;
+
+    if(newpassword == repassword) {
+
+        request.put({
+            url: config.apiUrl + '/users/updatePassword',
+            form: req.body,
+            json: true
+        }, function (error, response, body) {
+            if (error) {
+                res.status(404).json({'message': 'An error occurred', 'successful': 'false', 'info': ''});
+            }
+
+            if (response.statusCode == 200) {
+                res.status(200).json({'message': "Ok, your password was changed", 'successful': 'true', 'info': ''});
+            }else if (response.statusCode == 404) {
+                res.status(404).json({
+                    'message': "Sorry, we can't update your password now",
+                    'successful': 'false',
+                    'info': ''
+                });
+            }else if(response.statusCode == 401){
+                res.status(401).json({'message': 'Please login before update password', 'successful': 'false', 'info': ''});
+            }else{
+                res.status(500).json({'message': 'User not found', 'successful': 'false', 'info': ''});
+            }
+
+        });
+    }else{
+        res.status(401).json({'message': 'new password and repassword not match', 'successful': 'false', 'info': ''});
+    }
 });
 
 module.exports = router;

@@ -16,6 +16,7 @@ service.update = update;
 service.delete = _delete;
 service.updateDynamicCode = updateDynamicCode;
 service.validateDynamicCode = validateDynamicCode;
+service.newPassword = newPassword;
 service.updatePassword = updatePassword;
 
 module.exports = service;
@@ -46,7 +47,7 @@ function getById(_id) {
 
         if (user) {
             // return user (without hashed password)
-            deferred.resolve(_.omit(user, 'hash'));
+            deferred.resolve(user);
         } else {
             // user not found
             deferred.resolve();
@@ -185,7 +186,7 @@ db.users.update(
 return deferred.promise;
 }
 
-function updatePassword(_id, password){
+function newPassword(_id, password){
     var deferred = Q.defer();
 
     // validation
@@ -205,7 +206,8 @@ function updatePassword(_id, password){
 
         var set = {
             hash: bcrypt.hashSync(password, 10),
-            STATUS: "0"
+            STATUS: "0",
+            DYNAMICCODE: ""
         };
 
         db.users.update(
@@ -218,6 +220,30 @@ function updatePassword(_id, password){
                 deferred.resolve(flag);
             });
     }
+
+    return deferred.promise;
+}
+
+function updatePassword(_id, password){
+    var deferred = Q.defer();
+
+    // fields to update
+    // add hashed password to user object
+
+    var set = {
+        hash: bcrypt.hashSync(password, 10)
+    };
+
+    db.users.update(
+        { _id: mongo.helper.toObjectID(_id) },
+        { $set: set },
+        function (err, doc) {
+            if (err) deferred.reject(err.name + ': ' + err.message);
+
+            flag = {success: true};
+            deferred.resolve(flag);
+        });
+
 
     return deferred.promise;
 }

@@ -14,6 +14,7 @@ router.post('/authenticate', authenticateUser);
 router.post('/register', registerUser);
 router.post('/requestChangePassword' , requestChangePassword);
 router.post('/validateDynamicCode' , validateDynamicCode);
+router.put('/newPassword' , newPassword);
 router.put('/updatePassword' , updatePassword);
 router.get('/current', getCurrentUser);
 router.put('/update', updateUser);
@@ -127,12 +128,12 @@ function validateDynamicCode(req, res){
         });
 }
 
-function updatePassword(req, res){
+function newPassword(req, res){
     var userId = req.body.id;
     var password = req.body.password;
     console.log("change password, userid = " + userId);
 
-    userService.updatePassword(userId , password)
+    userService.newPassword(userId , password)
         .then(function (msg) {
             console.log(msg);
             if (msg && msg.success == true) {
@@ -144,6 +145,36 @@ function updatePassword(req, res){
         .catch(function (err) {
             res.sendStatus(404);
         });
+}
+
+function updatePassword(req, res){
+    var userId = req.body.id;
+    var password = req.body.password;
+    var newpassword = req.body.newpassword;
+
+    userService.getById(userId).then(function (user) {
+            if (user && bcrypt.compareSync(password, user.hash)) {
+                userService.updatePassword(userId, newpassword)
+                    .then(function (msg) {
+                        console.log(msg);
+                        if (msg && msg.success == true) {
+                            res.sendStatus(200);
+                        } else {
+                            res.sendStatus(404);
+                        }
+                    })
+                    .catch(function (err) {
+                        res.sendStatus(404);
+                    });
+            } else {
+                res.sendStatus(401);
+            }
+        })
+        .catch(function (err) {
+            res.sendStatus(500);
+        });
+
+    console.log("change password, userid = " + userId);
 }
 
 function deleteUser(req, res) {
