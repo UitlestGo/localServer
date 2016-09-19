@@ -78,6 +78,13 @@ router.post('/authenticate', function (req, res) {
     }
 });
 
+router.get('/something', function (req, res) {
+    // register using api to maintain clean separation between layers
+
+        res.status(401).json({'message':'validate error' , 'successful' : 'false', 'info' : ''});
+
+});
+
 
 
 

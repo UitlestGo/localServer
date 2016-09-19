@@ -2,7 +2,7 @@
     "connectionString": "mongodb://localhost:27017/uitgo",
     "apiUrl": "http://localhost:8080/api",
     "secret": "REPLACE THIS WITH YOUR OWN SECRET, IT CAN BE ANY STRING",
-    "serverPort": 8080,
+    "serverPort": 80,
     "transporter": "uitgomailer@gmail.com",
     "transporterPass" : "Ankhang!123"
 }
