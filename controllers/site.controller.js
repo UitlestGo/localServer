@@ -78,6 +78,11 @@ router.post('/authenticate', function (req, res) {
     }
 });
 
+router.get('/get', function (req, res) {
+
+    return res.status(401).json({'message':'token no match' , 'successful' : 'false', 'info' : ''});
+
+});
 
 
 

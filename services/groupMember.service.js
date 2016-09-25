@@ -2,7 +2,7 @@ var config = require('config.json');
 var _ = require('lodash');
 var Q = require('q');
 var mongo = require('mongoskin');
-var db = mongo.db(config.connectionString, { native_parser: true });
+var db = mongo.db(process.env.MONGODB_URI, { native_parser: true });
 db.bind('members');
 
 var service = {};
